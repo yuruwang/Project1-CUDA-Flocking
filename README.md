@@ -6,7 +6,11 @@ Project 1 - Flocking**
 * Modified CMakeList.txt: changed sm_20 to sm_60 inside cuda_add_library
 
 ### Result
+**Naive Implementation**
 ![](images/gif1.gif)
+**Uniform Grid Implementation**
+![](images/1.gif)
+
 ### Performance Testing
 ![](images/fps_boids_visual.jpg)
 ![](images/fps_boids_noVisual.jpg)
@@ -24,4 +28,4 @@ From the char we can see that, for naive implementation, as the block size incre
 The performance of coherent uniform grid is better than scattered one’s as observed from the diagram. This is the expected outcome because for the scattered uniform grid implementation, the pointers to the boid position and velocity data are sorted by the grid indices, but those pointers are referring to uncontinuous memory location. While for the coherent uniform grid implementation, the position and velocity data are sort directly, which increase the memory accessing speed.
 
 #### Did changing cell width and checking 27 vs 8 neighboring cells affect performance? Why or why not? Be careful: it is insufficient (and possibly incorrect) to say that 27-cell is slower simply because there are more cells to check!
-Changing the cell width did affect the performance. Setting the cell width as twice the neighboring distance means we only need to check at most 8 neighboring cells, while setting the cell width equals to the neighboring distance, we need to check all surrounding 27 cells to make sure all possible influencing boids are checked. Event though the 27 cells means more looping than 8 cells, but we need to notice that the volume the neighboring cells occupied are different as well. When the number of boids are large, checking 27 cells actually checks less boids than with 8 cells, which gives better performance. 
+Changing the cell width did affect the performance. Setting the cell width as twice the neighboring distance means we only need to check at most 8 neighboring cells, while setting the cell width equals to the neighboring distance, we need to check all surrounding 27 cells to make sure all possible influencing boids are checked. Event though the 27 cells means more looping than 8 cells, but we need to notice that the volume the neighboring cells occupied are different as well. When the number of boids are large, checking 27 cells actually checks less boids than with 8 cells, which gives better performance.
