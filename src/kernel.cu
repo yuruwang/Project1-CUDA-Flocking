@@ -450,6 +450,7 @@ __global__ void kernIdentifyCellStartEnd(int N, int *particleGridIndices,
 		gridCellEndIndices[firstCellIndex] = index - 1;
 		gridCellStartIndices[seconedCellIndex] = index;
 	}
+	
 }
 
 __global__ void kernUpdateVelNeighborSearchScattered(
@@ -477,7 +478,7 @@ __global__ void kernUpdateVelNeighborSearchScattered(
 	cellIdx3D.z = (int)((thisPos.z - gridMin.z) * inverseCellWidth);
 
 	// - Identify which cells may contain neighbors. This isn't always 8. 
-	//glm::ivec3 *neighborCells;
+	glm::ivec3 *neighborCells;
 
 	int neighborcell[8];
 
@@ -530,6 +531,58 @@ __global__ void kernUpdateVelNeighborSearchScattered(
 			}
 		}
 	}
+	////=================== 27 cells =================================
+	//glm::ivec3 *neighborCells;
+
+	//int neighborcell[27];
+
+	//int count = 0;
+	//for (int i = -1; i < 2; i++) {
+	//	for (int j = -1; j < 2; j++) {
+	//		for (int k = -1; k < 2; k++) {
+	//			neighborcell[count] = gridIndex3Dto1D(cellIdx3D.x + i, cellIdx3D.y + j, cellIdx3D.z + k, gridResolution);
+	//			count++;
+	//		}
+	//	}
+	//}
+
+	//glm::vec3 rule1Vel, rule2Vel, rule3Vel;
+	//glm::vec3 perceived_center(0.f);
+	//glm::vec3 c(0.f);
+	//glm::vec3 perceived_velocity(0.f);
+	//int rule1Count = 0;
+	//int rule3Count = 0;
+	//// - For each cell, read the start/end indices in the boid pointer array.
+	//// - Access each boid in the cell and compute velocity change from
+	////   the boids rules, if this boid is within the neighborhood distance.
+
+	////int boidindex = particleArrayIndices[index];
+	//
+	//for (int i = 0; i < 27; i++) {
+	//	if (neighborcell[i] == -1) {
+	//		continue;
+	//	}
+	//	for (int j = gridCellStartIndices[neighborcell[i]]; j < gridCellEndIndices[neighborcell[i]]; j++) {
+	//		int k = particleArrayIndices[j];
+	//		if (k != thisIndex) {
+	//			float distance = glm::length(pos[k] - pos[thisIndex]);
+	//			if (distance < rule1Distance) {
+	//				perceived_center += pos[k];
+	//				rule1Count++;
+	//			}
+	//			if (distance < rule2Distance)
+	//			{
+	//				c -= (pos[k] - pos[thisIndex]);
+	//			}
+	//			if (distance < rule3Distance)
+	//			{
+	//				perceived_velocity += vel1[k];
+	//				rule3Count++;
+	//			}
+	//		}
+	//	}
+	//}
+	////================================================================
 	if (rule1Count > 0)
 	{
 		perceived_center /= float(rule1Count);
@@ -732,6 +785,8 @@ void Boids::stepSimulationCoherentGrid(float dt) {
 	kernComputeIndices << <fullBlocksPerGrid, blockSize >> > (numObjects, gridSideCount, gridMinimum, gridInverseCellWidth, dev_pos, dev_particleArrayIndices, dev_particleGridIndices);
 	// - Unstable key sort using Thrust. A stable sort isn't necessary, but you
 	//   are welcome to do a performance comparison.
+	dev_thrust_particleArrayIndices = thrust::device_pointer_cast(dev_particleArrayIndices);
+	dev_thrust_particleGridIndices = thrust::device_pointer_cast(dev_particleGridIndices);
 	thrust::sort_by_key(dev_thrust_particleGridIndices, dev_thrust_particleGridIndices + numObjects, dev_thrust_particleArrayIndices);
 	// - Naively unroll the loop for finding the start and end indices of each
 	//   cell's data pointers in the array of boid indices
